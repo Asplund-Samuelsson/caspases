@@ -10,7 +10,8 @@ p10_file = "results/uniprot.p20.filtered.p10_CD_classification.tab"
 para_file = "results/uniprot.p20.paracaspase.2.txt"
 len_file = "results/uniprot.p20_only.complete_dyad.seq_lengths.tab"
 meta_file = "results/uniprot.p20.metacaspase.2.tab"
-p10c_file = "results/uniprot.p20.p10_class.tab"
+# p10c_file = "results/uniprot.p20.p10_class.tab"
+acid_file = "results/uniprot.p20.DD_dyad_classification.tab"
 
 # Load data
 tax = read_tsv(tax_file, quote="", comment="")
@@ -19,7 +20,8 @@ p10 = read_tsv(p10_file, col_names=c("UniProt_ID", "p10_CD"))
 para = scan(para_file, character())
 len = read_tsv(len_file, col_names=c("UniProt_ID", "p20_length"))
 meta = read_tsv(meta_file)
-p10c = read_tsv(p10c_file, col_names=c("UniProt_ID", "p10_class"))
+# p10c = read_tsv(p10c_file, col_names=c("UniProt_ID", "p10_class"))
+acid = read_tsv(acid_file, col_names=c("UniProt_ID", "Acidic_pocket"))
 
 tax = select(tax, -full_lineage)
 tax = rename(
@@ -64,20 +66,33 @@ tb = inner_join(len_tax_dyd, meta)
 # Change Metacaspase NA to No
 tb = mutate(tb, Metacaspase = ifelse(is.na(Metacaspase), "No", Metacaspase))
 
-# Add p10 classification
-p10c = p10c %>%
-  arrange(p10_class) %>%
-  group_by(UniProt_ID) %>%
-  summarise(p10_class = paste(p10_class, collapse=""))
-tb = left_join(tb, p10c)
-tb = mutate(tb, p10_class = ifelse(is.na(p10_class), "", p10_class))
+# # Add p10 classification
+# p10c = p10c %>%
+#   arrange(p10_class) %>%
+#   group_by(UniProt_ID) %>%
+#   summarise(p10_class = paste(p10_class, collapse=""))
+# tb = left_join(tb, p10c)
+# tb = mutate(tb, p10_class = ifelse(is.na(p10_class), "", p10_class))
+
+# Add acidic pocket classification
+tb = tb %>%
+  left_join(acid) %>%
+  mutate(Acidic_pocket = replace_na(Acidic_pocket, "")) %>%
+  # Classify as caspase if Type I metacaspase in Metazoa and not acidic pocket
+  mutate(
+    Metacaspase = ifelse(
+      Metacaspase == "I" & Acidic_pocket != "DD" & Kingdom == "Metazoa",
+      "Caspase", Metacaspase
+    )
+  )
 
 # Re-order columns
 tb = select(
   tb,
   UniProt_ID, HC_dyad, Predicted_activity, p20_length,
-  p10_class, p10_domain, Interdomain_dist, n_p20, n_p10,
-  Architecture, Length, Metacaspase, Paracaspase,
+  # p10_class,
+  p10_domain, Interdomain_dist, n_p20, n_p10,
+  Architecture, Length, Metacaspase, Paracaspase, Acidic_pocket,
   Organism, Group, Superkingdom, Kingdom, Phylum, Class, Order, Family, Genus,
   Species, Tax_ID
 )
