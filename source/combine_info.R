@@ -80,19 +80,18 @@ tb = tb %>%
   mutate(Acidic_pocket = replace_na(Acidic_pocket, "")) %>%
   # Classify as caspase if Type I metacaspase in Metazoa and not acidic pocket
   mutate(
-    Metacaspase = ifelse(
-      Metacaspase == "I" & Acidic_pocket != "DD" & Kingdom == "Metazoa",
-      "Caspase", Metacaspase
+    Caspase = ifelse(
+      Metacaspase != "No" & Acidic_pocket != "DD" & Kingdom == "Metazoa",
+      "Yes", "No"
     )
   )
 
 # Re-order columns
 tb = select(
   tb,
-  UniProt_ID, HC_dyad, Predicted_activity, p20_length,
-  # p10_class,
+  UniProt_ID, HC_dyad, Predicted_activity, p20_length, Acidic_pocket,
   p10_domain, Interdomain_dist, n_p20, n_p10,
-  Architecture, Length, Metacaspase, Paracaspase, Acidic_pocket,
+  Architecture, Length, Metacaspase, Paracaspase, Caspase,
   Organism, Group, Superkingdom, Kingdom, Phylum, Class, Order, Family, Genus,
   Species, Tax_ID
 )
