@@ -1,4 +1,4 @@
-options(width=150)
+options(width=130)
 
 # Load libraries
 library(tidyverse)
@@ -12,6 +12,7 @@ len_file = "results/uniprot.p20_only.complete_dyad.seq_lengths.tab"
 meta_file = "results/uniprot.p20.metacaspase.2.tab"
 # p10c_file = "results/uniprot.p20.p10_class.tab"
 acid_file = "results/uniprot.p20.DD_dyad_classification.tab"
+pfam_file = "results/uniprot.p20.pfam_architecture.tab"
 
 # Load data
 tax = read_tsv(tax_file, quote="", comment="")
@@ -22,6 +23,7 @@ len = read_tsv(len_file, col_names=c("UniProt_ID", "p20_length"))
 meta = read_tsv(meta_file)
 # p10c = read_tsv(p10c_file, col_names=c("UniProt_ID", "p10_class"))
 acid = read_tsv(acid_file, col_names=c("UniProt_ID", "Acidic_pocket"))
+pfam = read_tsv(pfam_file)
 
 tax = select(tax, -full_lineage)
 tax = rename(
@@ -86,6 +88,11 @@ tb = tb %>%
     )
   )
 
+# Add Pfam architecture
+tb = tb %>%
+  left_join(pfam) %>%
+  mutate(Pfam_Architecture = replace_na(Pfam_Architecture, ""))
+
 # Re-order columns
 tb = select(
   tb,
@@ -93,7 +100,7 @@ tb = select(
   p10_domain, Interdomain_dist, n_p20, n_p10,
   Architecture, Length, Metacaspase, Paracaspase, Caspase,
   Organism, Group, Superkingdom, Kingdom, Phylum, Class, Order, Family, Genus,
-  Species, Tax_ID
+  Species, Tax_ID, Pfam_Architecture
 )
 
 # Write to outfile

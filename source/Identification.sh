@@ -166,6 +166,19 @@ cut -f 1 -d \  results/uniprot.p20_only.DD_dyad_only.ali.fasta | \
 tr "\n" "\t" | tr ">" "\n" | sed -e 's/$/\n/' | sed -e 's/\t$//' | \
 grep -v "^$" > results/uniprot.p20.DD_dyad_classification.tab
 
+# 19) Identify Pfam domain architecture
+
+# Run hmmsearch versus Pfam
+hmmsearch --cut_tc --cpu 16 --noali --domtblout results/uniprot.p20.pfam.domtblout \
+data/Pfam-A.hmm.gz results/uniprot.p20.filtered.fasta
+
+# Get sequence IDs, i-Eval, and the positions of different domains:
+cat results/uniprot.p20.pfam.domtblout | grep -v "^#" | \
+sed -e 's/ \+/\t/g' | cut -f 1,4,13,18,19 > \
+results/uniprot.p20.pfam.domains.tab
+
+# Compute domain architectures
+Rscript source/domain_architectures.R
 
 # FINAL STEP) Create the big table:
 Rscript source/combine_info.R
