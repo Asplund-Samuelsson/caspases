@@ -7,10 +7,9 @@ library(tidyverse)
 tax_file = "results/uniprot.p20.filtered.taxonomy.tab"
 dyad_file = "results/uniprot.p20.CH_dyad_classification.tab"
 p10_file = "results/uniprot.p20.filtered.p10_CD_classification.tab"
-para_file = "results/uniprot.p20.paracaspase.2.txt"
+para_file = "results/uniprot.p20.paracaspase.txt"
 len_file = "results/uniprot.p20_only.complete_dyad.seq_lengths.tab"
-meta_file = "results/uniprot.p20.metacaspase.2.tab"
-# p10c_file = "results/uniprot.p20.p10_class.tab"
+meta_file = "results/uniprot.p20.metacaspase.tab"
 acid_file = "results/uniprot.p20.DD_dyad_classification.tab"
 pfam_file = "results/uniprot.p20.pfam_architecture.tab"
 
@@ -21,7 +20,6 @@ p10 = read_tsv(p10_file, col_names=c("UniProt_ID", "p10_CD"))
 para = scan(para_file, character())
 len = read_tsv(len_file, col_names=c("UniProt_ID", "p20_length"))
 meta = read_tsv(meta_file)
-# p10c = read_tsv(p10c_file, col_names=c("UniProt_ID", "p10_class"))
 acid = read_tsv(acid_file, col_names=c("UniProt_ID", "Acidic_pocket"))
 pfam = read_tsv(pfam_file)
 
@@ -67,14 +65,6 @@ tb = inner_join(len_tax_dyd, meta)
 
 # Change Metacaspase NA to No
 tb = mutate(tb, Metacaspase = ifelse(is.na(Metacaspase), "No", Metacaspase))
-
-# # Add p10 classification
-# p10c = p10c %>%
-#   arrange(p10_class) %>%
-#   group_by(UniProt_ID) %>%
-#   summarise(p10_class = paste(p10_class, collapse=""))
-# tb = left_join(tb, p10c)
-# tb = mutate(tb, p10_class = ifelse(is.na(p10_class), "", p10_class))
 
 # Add acidic pocket classification
 tb = tb %>%

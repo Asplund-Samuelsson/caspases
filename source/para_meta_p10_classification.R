@@ -7,14 +7,18 @@ library(doMC)
 registerDoMC(16)
 
 # Define infile and outfiles
-infile = "results/uniprot.p20.domains.2.tab"
+infile = "results/uniprot.p20.domains.tab"
 in_len = "results/uniprot.p20.filtered.seq_lengths.tab"
-out_para = "results/uniprot.p20.paracaspase.2.txt"
-out_meta = "results/uniprot.p20.metacaspase.2.tab"
+out_para = "results/uniprot.p20.paracaspase.txt"
+out_meta = "results/uniprot.p20.metacaspase.tab"
+out_p10 = "results/uniprot.p20.filtered.p10.txt"
 
 # Load data
 dom = read_tsv(infile, col_names=c("seqid", "domain", "start", "end"))
 len = read_tsv(in_len, col_names=c("seqid", "length"))
+
+# Identify sequences with a p10 domain
+write(unique(filter(dom, startsWith(domain, "p10"))$seqid), out_p10)
 
 # Identify paracaspases (at least one ig, Ig_2, or Ig_3 domain prior to p20)
 para = dom %>% filter(!startsWith("p10", domain)) %>% select(-end) %>%
