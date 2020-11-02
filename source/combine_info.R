@@ -12,6 +12,8 @@ len_file = "results/uniprot.p20_only.complete_dyad.seq_lengths.tab"
 meta_file = "results/uniprot.p20.metacaspase.tab"
 acid_file = "results/uniprot.p20.DD_dyad_classification.tab"
 pfam_file = "results/uniprot.p20.pfam_architecture.tab"
+bp20_file = "results/uniprot.p20.basic_pocket.tab"
+bp10_file = "results/uniprot.p10.basic_pocket.tab"
 
 # Load data
 tax = read_tsv(tax_file, quote="", comment="")
@@ -22,6 +24,8 @@ len = read_tsv(len_file, col_names=c("UniProt_ID", "p20_length"))
 meta = read_tsv(meta_file)
 acid = read_tsv(acid_file, col_names=c("UniProt_ID", "Acidic_pocket"))
 pfam = read_tsv(pfam_file)
+bp20 = read_tsv(bp10_file, col_names=c("UniProt_ID", "bp20"))
+bp10 = read_tsv(bp20_file, col_names=c("UniProt_ID", "bp10"))
 
 tax = select(tax, -full_lineage)
 tax = rename(
@@ -83,10 +87,19 @@ tb = tb %>%
   left_join(pfam) %>%
   mutate(Pfam_Architecture = replace_na(Pfam_Architecture, ""))
 
+# Add basic pocket annotation
+tb = tb %>%
+  left_join(bp20) %>%
+  left_join(bp10) %>%
+  mutate(
+    Basic_pocket = paste(replace_na(bp20, ""), replace_na(bp10, ""), sep="")
+  )
+
 # Re-order columns
 tb = select(
   tb,
-  UniProt_ID, HC_dyad, Predicted_activity, p20_length, Acidic_pocket,
+  UniProt_ID, HC_dyad, Predicted_activity, p20_length,
+  Acidic_pocket, Basic_pocket,
   p10_domain, Interdomain_dist, n_p20, n_p10,
   Architecture, Length, Metacaspase, Paracaspase, Caspase,
   Organism, Group, Superkingdom, Kingdom, Phylum, Class, Order, Family, Genus,

@@ -184,5 +184,40 @@ results/uniprot.p20.pfam.domains.tab
 Rscript source/domain_architectures.R
 
 
+# 20) Align to caspase-1 and p20 and p10 HMMs
+hmmalign --trim data/hmms/Pfam_p20.hmm \
+<(cat data/caspase-1.fasta results/uniprot.p20.fasta) | \
+seqmagick convert --input-format stockholm - results/uniprot.p20_cas1.ali.fasta
+
+hmmalign --trim data/hmms/Pfam_p10.hmm \
+<(cat data/caspase-1.fasta results/uniprot.p20.fasta) | \
+seqmagick convert --input-format stockholm - results/uniprot.p10_cas1.ali.fasta
+
+# Check position of basic pocket triad (R, Q, and R) in alignment:
+seqmagick convert --output-format fasta --head 1000 \
+results/uniprot.p20_cas1.ali.fasta - | belvu -
+
+seqmagick convert --output-format fasta --head 1000 \
+results/uniprot.p10_cas1.ali.fasta - | belvu -
+
+# Cut down p20 and p10 alignments so that they only includes basic pocket triad:
+seqmagick convert --cut 87:1200 --drop 2:1113 \
+results/uniprot.p20_cas1.ali.fasta \
+results/uniprot.p20_cas1.basic_pocket.ali.fasta
+
+seqmagick convert --cut 43:43 \
+results/uniprot.p10_cas1.ali.fasta \
+results/uniprot.p10_cas1.basic_pocket.ali.fasta
+
+# Create tables with triad classification for all sequences:
+cut -f 1 -d \  results/uniprot.p20_cas1.basic_pocket.ali.fasta | \
+tr "\n" "\t" | tr ">" "\n" | sed -e 's/$/\n/' | sed -e 's/\t$//' | \
+grep -v "^$" > results/uniprot.p20.basic_pocket.tab
+
+cut -f 1 -d \  results/uniprot.p10_cas1.basic_pocket.ali.fasta | \
+tr "\n" "\t" | tr ">" "\n" | sed -e 's/$/\n/' | sed -e 's/\t$//' | \
+grep -v "^$" > results/uniprot.p10.basic_pocket.tab
+
+
 # FINAL STEP) Create the big table:
 Rscript source/combine_info.R
