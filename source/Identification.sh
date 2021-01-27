@@ -221,3 +221,9 @@ grep -v "^$" > results/uniprot.p10.basic_pocket.tab
 
 # FINAL STEP) Create the big table:
 Rscript source/combine_info.R
+
+# Gzip all results files that are not used in the final step
+(
+  cat source/combine_info.R | grep "results/" | cut -f 2 -d \"
+  ls results/*
+) | sort | uniq -u | parallel --no-notice --jobs 16 'gzip {}'
