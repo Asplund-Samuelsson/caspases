@@ -41,4 +41,4 @@ The final output file contains the following information:
 | Pfam_Architecture | Pfam domain architecture |
 
 ### Author
-Johannes Asplund-Samuelsson, KTH (johannes.asplund.samuelsson@scilifelab.se)
+Johannes Asplund-Samuelsson (johannes.aspsam@gmail.com)
